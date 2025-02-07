@@ -11,7 +11,22 @@ impl App {
     pub const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
 
     pub async fn init() -> anyhow::Result<Self> {
-        let (args, iroh_data) = (Args::new()?, IrohData::new().await?);
+        let (args, iroh_data) = (Args::new_cli()?, IrohData::new().await?);
+        Ok(Self { args, iroh_data })
+    }
+
+    #[allow(dead_code, reason = "Potential external usage")]
+    pub async fn from_args(
+        send: bool,
+        receive: bool,
+        ticket: Option<String>,
+        path: clio::ClioPath,
+    ) -> anyhow::Result<Self> {
+        let (args, iroh_data) = (
+            Args::new(send, receive, ticket, path)?,
+            IrohData::new().await?,
+        );
+
         Ok(Self { args, iroh_data })
     }
 

@@ -21,16 +21,40 @@ pub struct Args {
 }
 
 impl Args {
-    pub fn new() -> anyhow::Result<Self> {
-        let args = Args::parse();
-
-        if args.recieve && args.ticket.as_ref().is_none_or(|t| t.is_empty()) {
+    fn run_checks(&self) -> anyhow::Result<()> {
+        if self.recieve && self.ticket.as_ref().is_none_or(|t| t.is_empty()) {
             return Err(anyhow!("A non-empty ticket must be specified."));
         }
 
-        if args.recieve && args.path.exists() {
+        if self.recieve && self.path.exists() {
             return Err(anyhow!("The recieving path can't be an existing one."));
         }
+
+        Ok(())
+    }
+
+    pub fn new_cli() -> anyhow::Result<Self> {
+        let args = Args::parse();
+
+        args.run_checks()?;
+
+        Ok(args)
+    }
+
+    pub fn new(
+        send: bool,
+        recieve: bool,
+        ticket: Option<String>,
+        path: clio::ClioPath,
+    ) -> anyhow::Result<Self> {
+        let args = Args {
+            send,
+            recieve,
+            ticket,
+            path,
+        };
+
+        args.run_checks()?;
 
         Ok(args)
     }
