@@ -1,0 +1,13 @@
+[package]
+name = "iroh-cli"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = { version = "1.0.95" }
+clap = { version = "4.5.26", features = ["derive"] }
+clio = { version = "0.3.5", features = ["clap-parse"] }
+iroh = { version = "0.32.1" }
+iroh-base = { version = "0.32.0" }
+iroh-blobs = { version = "0.32.0", features = ["rpc"] }
+tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
