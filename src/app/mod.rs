@@ -1,13 +1,31 @@
+use std::any::{Any, TypeId};
+
 use crate::prelude::*;
 
-pub struct App<Out: Write> {
+pub struct App<Out: Write + Any> {
     pub args: Args,
     pub iroh_data: IrohData,
     pub output_stream: Out,
 }
 
-impl<Out: Write> App<Out> {
+impl<Out: Write + Any> App<Out> {
     pub const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
+
+    /// Check if the output stream is any of the standard terminal ones:
+    /// - [`std::io::StdoutLock`]
+    /// - [`std::io::Stdout`]
+    /// - [`std::io::StdinLock`]
+    /// - [`std::io::Stdin`]
+    /// - [`std::io::StderrLock`]
+    /// - [`std::io::Stderr`]
+    fn is_output_tty(&self) -> bool {
+        self.output_stream.type_id() == TypeId::of::<std::io::StdoutLock>()
+            || self.output_stream.type_id() == TypeId::of::<std::io::Stdout>()
+            || self.output_stream.type_id() == TypeId::of::<std::io::StdinLock>()
+            || self.output_stream.type_id() == TypeId::of::<std::io::Stdin>()
+            || self.output_stream.type_id() == TypeId::of::<std::io::StderrLock>()
+            || self.output_stream.type_id() == TypeId::of::<std::io::Stderr>()
+    }
 
     pub async fn init(output_stream: Out) -> anyhow::Result<Self> {
         let (args, iroh_data) = (Args::new_cli()?, IrohData::new().await?);
@@ -103,6 +121,16 @@ impl<Out: Write> App<Out> {
 
         self.args.ticket =
             Some(BlobTicket::new(node_id.into(), blob.hash, blob.format)?.to_string());
+
+        if !self.is_output_tty() {
+            writeln!(
+                self.output_stream,
+                "{}",
+                self.args.ticket.as_deref().unwrap_or("")
+            )?;
+
+            return Ok(());
+        }
 
         writeln!(self.output_stream, "Opened connection!")?;
         writeln!(
