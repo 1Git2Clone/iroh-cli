@@ -1,31 +1,32 @@
 use crate::prelude::*;
 
-pub struct App {
+pub struct App<Out: Write> {
     pub args: Args,
     pub iroh_data: IrohData,
+    pub output_stream: Out,
 }
 
-impl App {
+impl<Out: Write> App<Out> {
     pub const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
 
-    pub async fn init() -> anyhow::Result<Self> {
+    pub async fn init(output_stream: Out) -> anyhow::Result<Self> {
         let (args, iroh_data) = (Args::new_cli()?, IrohData::new().await?);
-        Ok(Self { args, iroh_data })
+        Ok(Self {
+            args,
+            iroh_data,
+            output_stream,
+        })
     }
 
     #[allow(dead_code, reason = "Potential external usage")]
-    pub async fn from_args(
-        send: bool,
-        receive: bool,
-        ticket: Option<String>,
-        path: clio::ClioPath,
-    ) -> anyhow::Result<Self> {
-        let (args, iroh_data) = (
-            Args::new(send, receive, ticket, path)?,
-            IrohData::new().await?,
-        );
+    pub async fn from_args(args: Args, output_stream: Out) -> anyhow::Result<Self> {
+        let iroh_data = IrohData::new().await?;
 
-        Ok(Self { args, iroh_data })
+        Ok(Self {
+            args,
+            iroh_data,
+            output_stream,
+        })
     }
 
     pub async fn blob_from_path(&self) -> anyhow::Result<AddOutcome> {
@@ -55,7 +56,7 @@ impl App {
             return Ok(());
         }
 
-        println!("Starting download...");
+        writeln!(self.output_stream, "Strating download...")?;
 
         let client = self.iroh_data.blobstore.client();
 
@@ -87,7 +88,7 @@ impl App {
         let mut reader = client.read_at(ticket.hash(), 0, ReadAtLen::All).await?;
         file.write_all(&reader.read_to_bytes().await?)?;
 
-        println!("Download finished!");
+        writeln!(self.output_stream, "Download finished!")?;
 
         Ok(())
     }
@@ -103,14 +104,18 @@ impl App {
         self.args.ticket =
             Some(BlobTicket::new(node_id.into(), blob.hash, blob.format)?.to_string());
 
-        println!("Opened connection!");
-        println!("You can now recieve the data by running the app like so:");
-        println!(
+        writeln!(self.output_stream, "Opened connection!")?;
+        writeln!(
+            self.output_stream,
+            "You can now recieve the data by running the app like so:"
+        )?;
+        writeln!(
+            self.output_stream,
             "    {} --recieve --ticket {} {}",
             Self::APP_NAME,
             self.args.ticket.as_deref().unwrap_or(""),
             self.args.path.display()
-        );
+        )?;
 
         tokio::signal::ctrl_c().await?;
 
