@@ -96,11 +96,18 @@ impl<Out: Write + Any> App<Out> {
             }
         })
         .await
-        .or(Err(anyhow!(
-            "{}\n{}",
-            "Ticket connection timed out.",
-            "Make sure the sender hasn't closed their connection and that you're using the right ticket.",
-        )))?;
+        .or({
+            let err = format!(
+                "{}\n{} {}",
+                "Ticket connection timed out.",
+                "Make sure the sender hasn't closed their connection and that you're using",
+                "the right ticket.",
+            );
+            if !self.is_output_tty() {
+                writeln!(self.output_stream, "{}", err)?;
+            }
+            Err(anyhow!(err))
+        })?;
 
         let mut file = self.args.path.clone().create()?;
         let mut reader = client.read_at(ticket.hash(), 0, ReadAtLen::All).await?;
