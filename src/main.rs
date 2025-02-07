@@ -6,5 +6,7 @@ use crate::prelude::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    App::init().await?.process_all().await?.shutdown().await
+    let mut app = App::init().await?;
+    app.process_all().await?;
+    app.shutdown().await
 }

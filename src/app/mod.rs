@@ -43,16 +43,16 @@ impl App {
             .await
     }
 
-    pub async fn process_all(mut self) -> anyhow::Result<Self> {
-        self = self.process_recieve().await?;
-        self = self.process_send().await?;
+    pub async fn process_all(&mut self) -> anyhow::Result<()> {
+        self.process_recieve().await?;
+        self.process_send().await?;
 
-        Ok(self)
+        Ok(())
     }
 
-    pub async fn process_recieve(self) -> anyhow::Result<Self> {
+    pub async fn process_recieve(&mut self) -> anyhow::Result<()> {
         if !self.args.recieve {
-            return Ok(self);
+            return Ok(());
         }
 
         println!("Starting download...");
@@ -89,12 +89,12 @@ impl App {
 
         println!("Download finished!");
 
-        Ok(self)
+        Ok(())
     }
 
-    pub async fn process_send(mut self) -> anyhow::Result<Self> {
+    pub async fn process_send(&mut self) -> anyhow::Result<()> {
         if !self.args.send {
-            return Ok(self);
+            return Ok(());
         }
 
         let node_id = self.iroh_data.router.endpoint().node_id();
@@ -114,7 +114,7 @@ impl App {
 
         tokio::signal::ctrl_c().await?;
 
-        Ok(self)
+        Ok(())
     }
 
     pub async fn shutdown(self) -> anyhow::Result<()> {
