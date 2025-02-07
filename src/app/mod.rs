@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use crate::prelude::*;
 
 pub struct App {
@@ -61,13 +59,29 @@ impl App {
 
         let client = self.iroh_data.blobstore.client();
 
-        let ticket = BlobTicket::from_str(self.args.ticket.as_deref().unwrap_or(""))?;
+        let ticket = Arc::new(BlobTicket::from_str(
+            self.args.ticket.as_deref().unwrap_or(""),
+        )?);
 
-        client
-            .download(ticket.hash(), ticket.node_addr().clone())
-            .await?
-            .finish()
-            .await?;
+        timeout(Duration::from_secs(5), {
+            let tic = Arc::clone(&ticket);
+
+            async move {
+                client
+                    .download(tic.hash(), tic.node_addr().clone())
+                    .await
+                    .unwrap()
+                    .finish()
+                    .await
+                    .unwrap()
+            }
+        })
+        .await
+        .or(Err(anyhow!(
+            "{}\n{}",
+            "Ticket connection timed out.",
+            "Make sure the sender hasn't closed their connection and that you're using the right ticket.",
+        )))?;
 
         let mut file = self.args.path.clone().create()?;
         let mut reader = client.read_at(ticket.hash(), 0, ReadAtLen::All).await?;
