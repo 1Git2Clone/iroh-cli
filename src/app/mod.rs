@@ -1,8 +1,8 @@
 use crate::prelude::*;
 
 pub struct App {
-    args: Args,
-    iroh_data: IrohData,
+    pub args: Args,
+    pub iroh_data: IrohData,
 }
 
 impl App {
