@@ -64,14 +64,14 @@ impl<Out: Write + Any> App<Out> {
     }
 
     pub async fn process_all(&mut self) -> anyhow::Result<()> {
-        self.process_recieve().await?;
+        self.process_receive().await?;
         self.process_send().await?;
 
         Ok(())
     }
 
-    pub async fn process_recieve(&mut self) -> anyhow::Result<()> {
-        if !self.args.recieve {
+    pub async fn process_receive(&mut self) -> anyhow::Result<()> {
+        if !self.args.receive {
             return Ok(());
         }
 
@@ -143,11 +143,11 @@ impl<Out: Write + Any> App<Out> {
         writeln!(self.output_stream, "Opened connection!")?;
         writeln!(
             self.output_stream,
-            "You can now recieve the data by running the app like so:"
+            "You can now receive the data by running the app like so:"
         )?;
         writeln!(
             self.output_stream,
-            "    {} --recieve --ticket {} {}",
+            "    {} --receive --ticket {} {}",
             Self::APP_NAME,
             self.args.ticket.as_deref().unwrap_or(""),
             self.args.path.display()
