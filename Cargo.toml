@@ -1,7 +1,7 @@
 [package]
 name = "iroh-cli"
 version = "0.3.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0.95" }
