@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 /// A peer to peer CLI tool used to send and recieve files using iroh and iroh-blobs.
-#[derive(clap::Parser, Clone, Debug)]
+#[derive(clap::Parser, PartialEq, Eq, Clone, Debug)]
 pub struct Args {
     /// Use to send data.
     #[clap(long, action=clap::ArgAction::SetTrue, group = "send/recv")]

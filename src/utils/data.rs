@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+#[derive(Debug)]
 pub struct IrohData {
     pub local_pool: LocalPool,
     pub blobstore: Blobs<Store>,

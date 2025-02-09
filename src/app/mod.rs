@@ -2,6 +2,7 @@ use std::any::{Any, TypeId};
 
 use crate::prelude::*;
 
+#[derive(Debug)]
 pub struct App<Out: Write + Any> {
     pub args: Args,
     pub iroh_data: IrohData,
