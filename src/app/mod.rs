@@ -37,7 +37,7 @@ impl<Out: Write + Any> App<Out> {
         })
     }
 
-    #[allow(dead_code, reason = "Potential external usage")]
+    #[allow(dead_code, reason = "Potential external usage.")]
     pub async fn from_args(args: Args, output_stream: Out) -> anyhow::Result<Self> {
         let iroh_data = IrohData::new().await?;
 
