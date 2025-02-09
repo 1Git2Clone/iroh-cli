@@ -41,6 +41,7 @@ impl Args {
         Ok(args)
     }
 
+    #[allow(dead_code, reason = "Potential external usage")]
     pub fn new(
         send: bool,
         receive: bool,
